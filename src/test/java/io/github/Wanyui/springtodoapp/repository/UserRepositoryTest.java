@@ -160,4 +160,78 @@ class UserRepositoryTest {
         // When & Then
         assertThat(userRepository.count()).isEqualTo(1);
     }
+
+    @Test
+    @DisplayName("Should count active users correctly")
+    void shouldCountActiveUsersCorrectly() {
+        // Given
+        User activeUser1 = new User();
+        activeUser1.setUsername("active1");
+        activeUser1.setPassword("password123");
+        activeUser1.setEmail("active1@example.com");
+        
+        User activeUser2 = new User();
+        activeUser2.setUsername("active2");
+        activeUser2.setPassword("password123");
+        activeUser2.setEmail("active2@example.com");
+        
+        // Note: We can't create a user with empty email due to validation constraints
+        // The countActiveUsers query will filter out users with empty/null fields
+        
+        userRepository.save(activeUser1);
+        userRepository.save(activeUser2);
+        entityManager.flush();
+        
+        // When
+        long activeCount = userRepository.countActiveUsers();
+        
+        // Then
+        assertThat(activeCount).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("Should test new repository methods work correctly")
+    void shouldTestNewRepositoryMethodsWorkCorrectly() {
+        // Given
+        User user = new User();
+        user.setUsername("testuser");
+        user.setPassword("password123");
+        user.setEmail("test@example.com");
+
+        userRepository.save(user);
+        entityManager.flush();
+
+        // When - Test that the new methods work
+        long activeCount = userRepository.countActiveUsers();
+        long totalCount = userRepository.count();
+        
+        // Then
+        assertThat(activeCount).isEqualTo(1);
+        assertThat(totalCount).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("Should count users created after specific date")
+    void shouldCountUsersCreatedAfter() {
+        // Given
+        User user1 = new User();
+        user1.setUsername("user1");
+        user1.setPassword("password123");
+        user1.setEmail("user1@example.com");
+        
+        User user2 = new User();
+        user2.setUsername("user2");
+        user2.setPassword("password123");
+        user2.setEmail("user2@example.com");
+        
+        userRepository.save(user1);
+        userRepository.save(user2);
+        entityManager.flush();
+        
+        // When - Count users created after a date before the test
+        long count = userRepository.countByCreatedAfter(java.time.LocalDateTime.now().minusDays(1));
+        
+        // Then
+        assertThat(count).isEqualTo(2);
+    }
 } 

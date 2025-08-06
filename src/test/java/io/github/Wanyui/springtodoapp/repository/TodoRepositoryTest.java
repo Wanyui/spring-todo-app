@@ -319,4 +319,155 @@ class TodoRepositoryTest {
         assertThat(doneTodos).hasSize(1);
         assertThat(pendingTodos).isEmpty();
     }
+
+    @Test
+    @DisplayName("Should count todos by done status")
+    void shouldCountTodosByDoneStatus() {
+        // Given
+        Todo doneTodo = new Todo();
+        doneTodo.setTitle("Done Todo");
+        doneTodo.setDescription("Done Description");
+        doneTodo.setDone(true);
+        doneTodo.setUser(testUser);
+        
+        Todo pendingTodo = new Todo();
+        pendingTodo.setTitle("Pending Todo");
+        pendingTodo.setDescription("Pending Description");
+        pendingTodo.setDone(false);
+        pendingTodo.setUser(testUser);
+        
+        todoRepository.save(doneTodo);
+        todoRepository.save(pendingTodo);
+        
+        // When
+        long doneCount = todoRepository.countByDone(true);
+        long pendingCount = todoRepository.countByDone(false);
+        
+        // Then
+        assertThat(doneCount).isEqualTo(1);
+        assertThat(pendingCount).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("Should count todos by user")
+    void shouldCountTodosByUser() {
+        // Given
+        User user2 = new User();
+        user2.setUsername("user2");
+        user2.setPassword("password456");
+        user2.setEmail("user2@example.com");
+        user2 = userRepository.save(user2);
+        
+        Todo todo1 = new Todo();
+        todo1.setTitle("User 1 Todo 1");
+        todo1.setDescription("Description 1");
+        todo1.setDone(false);
+        todo1.setUser(testUser);
+        
+        Todo todo2 = new Todo();
+        todo2.setTitle("User 1 Todo 2");
+        todo2.setDescription("Description 2");
+        todo2.setDone(true);
+        todo2.setUser(testUser);
+        
+        Todo todo3 = new Todo();
+        todo3.setTitle("User 2 Todo");
+        todo3.setDescription("Description 3");
+        todo3.setDone(false);
+        todo3.setUser(user2);
+        
+        todoRepository.save(todo1);
+        todoRepository.save(todo2);
+        todoRepository.save(todo3);
+        
+        // When
+        long user1Count = todoRepository.countByUser(testUser);
+        long user2Count = todoRepository.countByUser(user2);
+        
+        // Then
+        assertThat(user1Count).isEqualTo(2);
+        assertThat(user2Count).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("Should count todos by user and done status")
+    void shouldCountTodosByUserAndDoneStatus() {
+        // Given
+        Todo doneTodo = new Todo();
+        doneTodo.setTitle("Done Todo");
+        doneTodo.setDescription("Done Description");
+        doneTodo.setDone(true);
+        doneTodo.setUser(testUser);
+        
+        Todo pendingTodo = new Todo();
+        pendingTodo.setTitle("Pending Todo");
+        pendingTodo.setDescription("Pending Description");
+        pendingTodo.setDone(false);
+        pendingTodo.setUser(testUser);
+        
+        todoRepository.save(doneTodo);
+        todoRepository.save(pendingTodo);
+        
+        // When
+        long doneCount = todoRepository.countByUserAndDone(testUser, true);
+        long pendingCount = todoRepository.countByUserAndDone(testUser, false);
+        
+        // Then
+        assertThat(doneCount).isEqualTo(1);
+        assertThat(pendingCount).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("Should count todos by user and done status with multiple users")
+    void shouldCountTodosByUserAndDoneStatusWithMultipleUsers() {
+        // Given
+        User user2 = new User();
+        user2.setUsername("user2");
+        user2.setPassword("password456");
+        user2.setEmail("user2@example.com");
+        user2 = userRepository.save(user2);
+        
+        // User 1 todos
+        Todo user1DoneTodo = new Todo();
+        user1DoneTodo.setTitle("User 1 Done");
+        user1DoneTodo.setDescription("Description");
+        user1DoneTodo.setDone(true);
+        user1DoneTodo.setUser(testUser);
+        
+        Todo user1PendingTodo = new Todo();
+        user1PendingTodo.setTitle("User 1 Pending");
+        user1PendingTodo.setDescription("Description");
+        user1PendingTodo.setDone(false);
+        user1PendingTodo.setUser(testUser);
+        
+        // User 2 todos
+        Todo user2DoneTodo = new Todo();
+        user2DoneTodo.setTitle("User 2 Done");
+        user2DoneTodo.setDescription("Description");
+        user2DoneTodo.setDone(true);
+        user2DoneTodo.setUser(user2);
+        
+        Todo user2PendingTodo = new Todo();
+        user2PendingTodo.setTitle("User 2 Pending");
+        user2PendingTodo.setDescription("Description");
+        user2PendingTodo.setDone(false);
+        user2PendingTodo.setUser(user2);
+        
+        todoRepository.save(user1DoneTodo);
+        todoRepository.save(user1PendingTodo);
+        todoRepository.save(user2DoneTodo);
+        todoRepository.save(user2PendingTodo);
+        
+        // When
+        long user1DoneCount = todoRepository.countByUserAndDone(testUser, true);
+        long user1PendingCount = todoRepository.countByUserAndDone(testUser, false);
+        long user2DoneCount = todoRepository.countByUserAndDone(user2, true);
+        long user2PendingCount = todoRepository.countByUserAndDone(user2, false);
+        
+        // Then
+        assertThat(user1DoneCount).isEqualTo(1);
+        assertThat(user1PendingCount).isEqualTo(1);
+        assertThat(user2DoneCount).isEqualTo(1);
+        assertThat(user2PendingCount).isEqualTo(1);
+    }
 } 

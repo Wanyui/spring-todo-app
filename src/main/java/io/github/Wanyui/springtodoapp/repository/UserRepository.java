@@ -1,8 +1,12 @@
 package io.github.Wanyui.springtodoapp.repository;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import io.github.Wanyui.springtodoapp.entity.User;
@@ -49,4 +53,30 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	 * @return true if a user with the given email exists, false otherwise
 	 */
 	boolean existsByEmail(String email);
+	
+	/**
+	 * Counts users created after a specific date.
+	 * 
+	 * @param date the date to count from
+	 * @return the number of users created after the specified date
+	 */
+	@Query("SELECT COUNT(u) FROM User u WHERE u.createdAt >= :date")
+	long countByCreatedAfter(@Param("date") LocalDateTime date);
+	
+	/**
+	 * Finds users by username or email containing the given search term.
+	 * 
+	 * @param searchTerm the term to search for
+	 * @return a list of users matching the search criteria
+	 */
+	@Query("SELECT u FROM User u WHERE LOWER(u.username) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR LOWER(u.email) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
+	List<User> findByUsernameOrEmailContaining(@Param("searchTerm") String searchTerm);
+	
+	/**
+	 * Counts active users (users with valid username and email).
+	 * 
+	 * @return the number of active users
+	 */
+	@Query("SELECT COUNT(u) FROM User u WHERE u.username IS NOT NULL AND u.username != '' AND u.email IS NOT NULL AND u.email != ''")
+	long countActiveUsers();
 }
